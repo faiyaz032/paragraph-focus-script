@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Content Editable div</title>
+    <style>
+      html {
+        font-size: 62.5%;
+      }
+      label {
+        font-size: 1.5rem;
+      }
+      #editable-div {
+        width: 20rem;
+        height: 20rem;
+        background-color: rgb(223, 221, 221);
+        cursor: text;
+        padding: 2rem;
+        font-size: 1.6rem;
+        color: black;
+      }
+      #editable-div p {
+        margin: 2rem 0;
+        transition: all 0.3s;
+      }
+      .focus {
+        opacity: 1;
+      }
+      .out-of-focus {
+        opacity: 0.2;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Content editable div</h1>
+    <div id="editable-div" contenteditable="true">
+      <p class="paragraph"><br /></p>
+    </div>
+    <input type="checkbox" name="focus-mode" id="focusCheck" />
+    <label for="focusCheck">Focus Mode</label>
+    <script>
+      function getSelectionStart() {
+        const node = document.getSelection().anchorNode;
+        if (
+          document.getSelection().baseNode.parentNode.parentNode.id !=
+          "editable-div"
+        ) {
+          return;
+        }
+        console.log(document.getSelection().baseNode.parentNode.parentNode.id);
+        return node.nodeType === 3 ? node.parentElement : node;
+      }
+      const editableDiv = document.querySelector("#editable-div");
+      const checkBox = document.querySelector("#focusCheck");
+      let paragraphs;
+      let focusToggle = false;
+
+      const removeFocus = (focus, outOfFocus) => {
+        paragraphs?.forEach((el) => {
+          el?.classList.add(`out-of-focus`);
+          el?.classList.remove(`focus`);
+        });
+      };
+
+      const addFocus = (el) => {
+        el?.classList.remove("out-of-focus");
+        el?.classList.add("focus");
+      };
+
+      const mouseEventFunc = function (e) {
+        if (e.target.nodeName === "P") {
+          if (this == true) {
+            removeFocus();
+            addFocus(e.target);
+          } else {
+            paragraphs?.forEach((el) => {
+              addFocus(el);
+            });
+          }
+        }
+      };
+      const bindedMouseEventFunc = mouseEventFunc.bind(true);
+
+      const keydownFunc = (e) => {
+        if (e.key.includes("Arrow")) {
+          removeFocus();
+          addFocus(getSelectionStart());
+        }
+      };
+
+      // adding p tag and some additional stuff
+      editableDiv.addEventListener("keypress", (e) => {
+        paragraphs = [...editableDiv.getElementsByTagName("p")];
+        if (e.keyCode == "13") {
+          document.execCommand("defaultParagraphSeparator", false, "p");
+          if (focusToggle) {
+            removeFocus();
+            addFocus(getSelectionStart());
+          }
+        }
+      });
+      // adding event listeners function
+      function addEffect() {
+        editableDiv.addEventListener("keydown", keydownFunc);
+        // hover effect
+        editableDiv.addEventListener("mouseover", bindedMouseEventFunc);
+        // hover effect
+        editableDiv.addEventListener("mouseout", mouseEventFunc);
+        (function () {
+          removeFocus();
+          addFocus(getSelectionStart());
+        })();
+      }
+      // checkbox functionality
+      checkBox.addEventListener("click", (e) => {
+        focusToggle = !focusToggle;
+        if (focusToggle === true) {
+          addEffect();
+        } else {
+          paragraphs?.forEach((el) => {
+            el.classList.remove("out-of-focus");
+            el.classList.remove("focus");
+          });
+          editableDiv.removeEventListener("mouseover", bindedMouseEventFunc);
+          editableDiv.removeEventListener("mouseout", mouseEventFunc);
+          editableDiv.removeEventListener("keydown", keydownFunc);
+        }
+      });
+    </script>
+  </body>
+</html>
